@@ -1,5 +1,7 @@
 # Learn Colors
 
+![lLearn colors](/resources/learn_colors.gif)
+
 ## Getting started
 
 To get started you must first compile the program

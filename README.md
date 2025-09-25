@@ -2,6 +2,12 @@
 
 ![lLearn colors](/resources/learn_colors.gif)
 
+## Prerequsites
+
+>You must have raylib installed. This is done by downloading the binaries or using the package manager on your respective OS.
+> More information is found on the official [raylib github](https://github.com/raysan5/raylib) page.
+
+
 ## Getting started
 
 To get started you must first compile the program
@@ -13,10 +19,3 @@ And then execute using
 ```
 ./a.out
 ```
-
-## Building `raylib` applications
-
-> ### Prerequsites
->You must have raylib installed. This is done by downloading the binaries or using the package manager on your respective OS.
-> More information is found on the official [raylib github](https://github.com/raysan5/raylib) page.
-

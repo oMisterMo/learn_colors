@@ -11,6 +11,8 @@ int gameScreenHeight = INITIAL_SCREEN_HEIGHT;
 
 
 // Function definition
+
+// Utils
 Rectangle getRandomSource() {
     return (Rectangle) { 32 * GetRandomValue(0, 1), 32 * GetRandomValue(0, 4), 32, 32 };
 }
@@ -36,7 +38,6 @@ void applyShake(Tray *tray, float *elementX, float *elementY) {
         tray->dest.y = tray->originalPosition.y;
     }
 }
-
 int compareTrays(const void* a, const void* b) {
     // Attempt 1 - Deference input
     // Tray A = (* (Tray*) a);  // typecastint to Tray* and deference to get the value
@@ -54,6 +55,7 @@ int compareTrays(const void* a, const void* b) {
     return 0;
 }
 
+// Input
 void handleInput(Game *game, float scale) {
     Tray *trays = game->trays;
     Card *cards = game->cards;
@@ -203,6 +205,60 @@ void handleInput(Game *game, float scale) {
 
 }
 
+// Draw
+void drawBackground(Texture2D layers[], double *increment, int order[]) {
+    if (isDrawBackground && !isOff) {
+        (*increment) += (0.09) * GetFrameTime();
+
+        int width = layers[0].width;
+        int height = layers[0].height;
+        int startX = 0;
+        int startY = -height / 2 ;
+
+        int row = 0;
+
+        // For each layer on the y axis
+        while (startY < gameScreenHeight + height * 2) {
+
+            int index = order[row % 4];
+            int clampedW = (width - gameScreenWidth) / 2;
+            int speed = 0;
+
+            if (isPrarallaxBackground && !isOff) {
+                speed = (sin(*increment * index) * clampedW) + clampedW; // 0 < speed < 900
+            }
+
+            int xPos = startX - speed;
+
+            DrawTexture(layers[index], xPos, startY, WHITE);
+
+            startY += height / 1.6;
+            row++;
+
+        }
+    }
+}
+void drawCursor(Vector2 virtualMouse, Texture2D cursor, Texture2D cursorPressed) {
+    if (isShowCursor && IsCursorOnScreen() && !isOff) {
+        // Subtract the offset of cursor tip
+        virtualMouse = Vector2SubtractValue(virtualMouse, 17);
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            DrawTexture(cursorPressed, virtualMouse.x, virtualMouse.y, WHITE);
+        } else {
+            DrawTexture(cursor, virtualMouse.x, virtualMouse.y, WHITE);
+        }
+    }
+}
+
+// Score
+void reset(int *score) {
+    *score = 0;
+}
+void drawScore(int score) {
+    DrawText((TextFormat("Score: %d", score)), 20, 20, 30, GRAY);
+}
+
+// Stars
 void initStars(Animation *stars, Texture2D *starsTexture, Spritesheet starsSheet) {
     for (int i = 0; i < NO_OF_STARS; ++i) {
         stars[i] = (Animation) {
@@ -212,8 +268,46 @@ void initStars(Animation *stars, Texture2D *starsTexture, Spritesheet starsSheet
             .isAnimating = false
          };
     }
-
 }
+void updateStars(Animation *stars) {
+    // Loop through all stars, and animate otherwise do nothing to empty array
+    for (int i = 0; i < NO_OF_STARS; ++i) {
+        Animation *star = stars + i;
+
+        if (star->isAnimating) {
+            star->sheet.frameCounter++;
+            // Slow down frame speed
+            if (star->sheet.frameCounter >= (GetFPS() / star->sheet.frameSpeed)) {
+                // Time to update current frame index and reset counter
+                star->sheet.frameCounter = 0;
+                star->sheet.currentFrame++;
+                // Ensure frame index stays within bounds
+                if (star->sheet.currentFrame > NO_FRAMES_STARS - 1) {
+                    // Star animation is complete
+                    // Reset it members
+                    // Remove current reference from the list
+                    star->sheet.currentFrame = 0;
+                    star->isAnimating = false;
+                }
+                // Update source rect (index * width)
+                star->sheet.srcRec.x = (float) star->sheet.currentFrame * (float) star->texture->width / NO_FRAMES_STARS;
+            }
+        }
+
+    }
+}
+void drawStars(Animation *stars) {
+    // Loop through all stars, and draw otherwise do nothing to empty array
+    for (int i = 0; i < NO_OF_STARS; ++i) {
+
+        Animation *star = stars + i;
+        if (star->isAnimating && isAnimateStars && !isOff) {
+            DrawTextureRec(*(star->texture), star->sheet.srcRec, star->position , WHITE);
+        }
+    }
+}
+
+// Trays
 void initTrays(Game *game) {
     Tray *trays = game->trays;
     Color *colors = game->colors;
@@ -239,6 +333,29 @@ void initTrays(Game *game) {
         };
     }
 }
+void updateTrays(Tray *trays) {
+    for (int i = 0; i < NO_OF_TRAYS; ++i) {
+        // Tray *tray = (game->trays + i);
+        Tray *tray = &trays[i];
+        if (tray->isShaking) {
+            applyShake(&trays[i], &tray->dest.x, &tray->dest.y);
+        }
+    }
+}
+void drawTrays(Tray trays[]) {
+    for (int i = 0; i < NO_OF_TRAYS; ++i) {
+        Tray tray = trays[i];
+        if (isDrawTray && !isOff) {
+            // DrawRectangleRounded(trays[i], 0.3f, 16, colors[i]);    // Show bounds
+            DrawTextureV(*trays->texture, (Vector2){tray.dest.x - 7, tray.dest.y + 7}, BLACK);
+            DrawTextureV(*trays->texture, (Vector2){tray.dest.x, tray.dest.y}, tray.color);
+        } else {
+            DrawRectangleRounded(trays[i].dest, 0.3f, 16, tray.color);
+        }
+    }
+}
+
+// Cards
 void initCards(Game *game) {
     Card *cards = game->cards;
     Color *colors = game->colors;
@@ -281,7 +398,6 @@ void initCards(Game *game) {
         cards[i].imgSrc = getRandomSource();
     }
 }
-
 void updateCards(Card cards[]) {
     /**
      * Card cards[] is interpreted as Card *card
@@ -320,87 +436,6 @@ void updateCards(Card cards[]) {
         }
     }
 }
-void updateTrays(Tray *trays) {
-    for (int i = 0; i < NO_OF_TRAYS; ++i) {
-        // Tray *tray = (game->trays + i);
-        Tray *tray = &trays[i];
-        if (tray->isShaking) {
-            applyShake(&trays[i], &tray->dest.x, &tray->dest.y);
-        }
-    }
-}
-void updateStars(Animation *stars) {
-    // Loop through all stars, and animate otherwise do nothing to empty array
-    for (int i = 0; i < NO_OF_STARS; ++i) {
-        Animation *star = stars + i;
-
-        if (star->isAnimating) {
-            star->sheet.frameCounter++;
-            // Slow down frame speed
-            if (star->sheet.frameCounter >= (GetFPS() / star->sheet.frameSpeed)) {
-                // Time to update current frame index and reset counter
-                star->sheet.frameCounter = 0;
-                star->sheet.currentFrame++;
-                // Ensure frame index stays within bounds
-                if (star->sheet.currentFrame > NO_FRAMES_STARS - 1) {
-                    // Star animation is complete
-                    // Reset it members
-                    // Remove current reference from the list
-                    star->sheet.currentFrame = 0;
-                    star->isAnimating = false;
-                }
-                // Update source rect (index * width)
-                star->sheet.srcRec.x = (float) star->sheet.currentFrame * (float) star->texture->width / NO_FRAMES_STARS;
-            }
-        }
-
-    }
-}
-
-void drawBackground(Texture2D layers[], double *increment, int order[]) {
-    if (isDrawBackground && !isOff) {
-        (*increment) += (0.09) * GetFrameTime();
-
-        int width = layers[0].width;
-        int height = layers[0].height;
-        int startX = 0;
-        int startY = -height / 2 ;
-
-        int row = 0;
-
-        // For each layer on the y axis
-        while (startY < gameScreenHeight + height * 2) {
-
-            int index = order[row % 4];
-            int clampedW = (width - gameScreenWidth) / 2;
-            int speed = 0;
-
-            if (isPrarallaxBackground && !isOff) {
-                speed = (sin(*increment * index) * clampedW) + clampedW; // 0 < speed < 900
-            }
-
-            int xPos = startX - speed;
-
-            DrawTexture(layers[index], xPos, startY, WHITE);
-
-            startY += height / 1.6;
-            row++;
-
-        }
-    }
-}
-void drawTrays(Tray trays[]) {
-    for (int i = 0; i < NO_OF_TRAYS; ++i) {
-        Tray tray = trays[i];
-        if (isDrawTray && !isOff) {
-            // DrawRectangleRounded(trays[i], 0.3f, 16, colors[i]);    // Show bounds
-            DrawTextureV(*trays->texture, (Vector2){tray.dest.x - 7, tray.dest.y + 7}, BLACK);
-            DrawTextureV(*trays->texture, (Vector2){tray.dest.x, tray.dest.y}, tray.color);
-        } else {
-            DrawRectangleRounded(trays[i].dest, 0.3f, 16, tray.color);
-        }
-    }
-}
 void drawCards(Card cards[], Texture2D check) {
     for (int i = 0; i < NO_OF_CARDS; ++i) {
         Card card = cards[i];
@@ -421,34 +456,6 @@ void drawCards(Card cards[], Texture2D check) {
             DrawTexture(check, x, y, WHITE);
         }
     }
-}
-void drawCursor(Vector2 virtualMouse, Texture2D cursor, Texture2D cursorPressed) {
-    if (isShowCursor && IsCursorOnScreen() && !isOff) {
-        // Subtract the offset of cursor tip
-        virtualMouse = Vector2SubtractValue(virtualMouse, 17);
-        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            DrawTexture(cursorPressed, virtualMouse.x, virtualMouse.y, WHITE);
-        } else {
-            DrawTexture(cursor, virtualMouse.x, virtualMouse.y, WHITE);
-        }
-    }
-}
-void drawScore(int score) {
-    DrawText((TextFormat("Score: %d", score)), 20, 20, 30, GRAY);
-}
-void drawStars(Animation *stars) {
-    // Loop through all stars, and draw otherwise do nothing to empty array
-    for (int i = 0; i < NO_OF_STARS; ++i) {
-
-        Animation *star = stars + i;
-        if (star->isAnimating && isAnimateStars && !isOff) {
-            DrawTextureRec(*(star->texture), star->sheet.srcRec, star->position , WHITE);
-        }
-    }
-}
-
-void reset(int *score) {
-    *score = 0;
 }
 
 

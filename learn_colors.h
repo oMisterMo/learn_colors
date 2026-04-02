@@ -1,3 +1,6 @@
+#ifndef LEARN_COLORS_H
+#define LEARN_COLORS_H
+
 #include "raylib.h"
 #include "reasings.h"
 #include "raymath.h"
@@ -6,15 +9,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
-
-const int INITIAL_SCREEN_WIDTH = 2880 / 3;
-const int INITIAL_SCREEN_HEIGHT = 1920 / 3;
-
-int screenWidth = INITIAL_SCREEN_WIDTH;
-int screenHeight = INITIAL_SCREEN_HEIGHT;
-int gameScreenWidth = INITIAL_SCREEN_WIDTH;
-int gameScreenHeight = INITIAL_SCREEN_HEIGHT;
-
 
 #define NO_OF_TRAYS 3
 #define NO_OF_CARDS 4
@@ -126,3 +120,25 @@ typedef struct Game {
     NPatchInfo nPatchSrc;
     Vector2 virtualMouse;
 } Game;
+
+// Function declarations
+Rectangle getRandomSource(void);
+void setRandomSourceRec(Rectangle *rect);
+void applyShake(Tray *tray, float *elementX, float *elementY);
+int compareTrays(const void* a, const void* b);
+void initStars(Animation *stars, Texture2D *starsTexture, Spritesheet starsSheet);
+void initTrays(Game *game);
+void initCards(Game *game);
+void handleInput(Game *game, float scale);
+void updateCards(Card cards[]);
+void updateTrays(Tray *trays);
+void updateStars(Animation *stars);
+void drawBackground(Texture2D layers[], double *increment, int order[]);
+void drawTrays(Tray trays[]);
+void drawCards(Card cards[], Texture2D check);
+void drawCursor(Vector2 virtualMouse, Texture2D cursor, Texture2D cursorPressed);
+void drawScore(int score);
+void drawStars(Animation *stars);
+void reset(int *score);
+
+#endif // LEARN_COLORS_H

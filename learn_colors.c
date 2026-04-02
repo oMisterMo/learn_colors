@@ -1,26 +1,24 @@
 #include "learn_colors_audio.h"
 #include "learn_colors.h"
 
-// Methods
-// ---------------------------
-// Function Declaration
-// ---------------------------
+const int INITIAL_SCREEN_WIDTH = 2880 / 3;
+const int INITIAL_SCREEN_HEIGHT = 1920 / 3;
 
-// Todo: add declarations
-void reset(int *score);
+int screenWidth = INITIAL_SCREEN_WIDTH;
+int screenHeight = INITIAL_SCREEN_HEIGHT;
+int gameScreenWidth = INITIAL_SCREEN_WIDTH;
+int gameScreenHeight = INITIAL_SCREEN_HEIGHT;
 
-// ---------------------------
+
 // Function definition
-// ---------------------------
-
-Rectangle GetRandomSource() {
+Rectangle getRandomSource() {
     return (Rectangle) { 32 * GetRandomValue(0, 1), 32 * GetRandomValue(0, 4), 32, 32 };
 }
-void SetRandomSourceRec(Rectangle *rect) {
+void setRandomSourceRec(Rectangle *rect) {
     rect->x =  32 * GetRandomValue(0, 1);
     rect->y = 32 * GetRandomValue(0, 4);
 }
-void ApplyShake(Tray *tray, float *elementX, float *elementY) {
+void applyShake(Tray *tray, float *elementX, float *elementY) {
     if (tray->shakeDuration > 0.0f) {
         // Generate random offsets within the intensity range
         float offsetX = (GetRandomValue(0, 100) / 100.0f - 0.5f) * tray->shakeIntensity * 2.0f;
@@ -39,8 +37,7 @@ void ApplyShake(Tray *tray, float *elementX, float *elementY) {
     }
 }
 
-
-int CompareTrays(const void* a, const void* b) {
+int compareTrays(const void* a, const void* b) {
     // Attempt 1 - Deference input
     // Tray A = (* (Tray*) a);  // typecastint to Tray* and deference to get the value
     // Tray B = (* (Tray*) b);
@@ -55,84 +52,6 @@ int CompareTrays(const void* a, const void* b) {
     (void) A;
     (void) B;
     return 0;
-}
-void initStars(Animation *stars, Texture2D *starsTexture, Spritesheet starsSheet) {
-    for (int i = 0; i < NO_OF_STARS; ++i) {
-        stars[i] = (Animation) {
-            .texture = starsTexture,
-            .position = (Vector2) { 0 },
-            .sheet = starsSheet,
-            .isAnimating = false
-         };
-    }
-
-}
-void initTrays(Game *game) {
-    Tray *trays = game->trays;
-    Color *colors = game->colors;
-    Texture2D *texture = game->trayTexture;
-
-    int trayStartX = -(TRAY_WIDTH * NO_OF_TRAYS) / 2;
-    for (int i = 0; i < NO_OF_TRAYS; ++i) {
-        Rectangle dest = {
-            trayStartX + gameScreenWidth / 2 + (TRAY_WIDTH * i) + (i * GAP) - (GAP * (NO_OF_TRAYS - 1)) / 2,
-            gameScreenHeight - TRAY_HEIGHT - PADDING,
-            TRAY_WIDTH,
-            TRAY_HEIGHT
-        };
-
-        trays[i] = (Tray) {
-            .texture = texture,
-            .color = colors[i],
-            .dest = dest,
-            .isShaking = false,
-            .shakeDuration = 0.0f,
-            .shakeIntensity = 0.0f,
-            .originalPosition = { dest.x, dest.y }
-        };
-    }
-}
-void initCards(Game *game) {
-    Card *cards = game->cards;
-    Color *colors = game->colors;
-    Texture2D *textures = game->cardTextures;
-
-    int cardStartX = -(CARD_WIDTH * NO_OF_CARDS) / 2;
-    for (int i = 0; i < NO_OF_CARDS; ++i) {
-        Vector2 startPosition = {
-            cardStartX + gameScreenWidth / 2 + (CARD_WIDTH * i) + (i * GAP) - (GAP * (NO_OF_CARDS - 1)) / 2,
-            PADDING
-        };
-        int id = GetRandomValue(0, NO_OF_TRAYS - 1);
-
-        if (isDrawCard && id >= 3) id = GetRandomValue(0, 2);
-
-        cards[i].dest = (Rectangle) {
-            startPosition.x,
-            startPosition.y,
-            CARD_WIDTH,
-            CARD_HEIGHT
-        };
-        cards[i].color = colors[id];
-
-        // flags
-        cards[i].isDragging = false;
-        cards[i].reachedTarget = false;
-        cards[i].scoredPoints = false;
-
-        // tween
-        cards[i].currentPosition = startPosition;   // This is set to the mousePosition at runtime
-        cards[i].targetPosition = startPosition;
-        cards[i].state = IDLE;
-        cards[i].frameCounter = 0;
-        cards[i].duration = 30.0f;                  // Length in frame (30 frame = 500ms)
-
-        // img
-        cards[i].nPatchTexture = game->nPatchTexture;
-        cards[i].nPatchSrc = game->nPatchSrc;
-        cards[i].imgTexture = textures[id];
-        cards[i].imgSrc = GetRandomSource();
-    }
 }
 
 void handleInput(Game *game, float scale) {
@@ -284,10 +203,89 @@ void handleInput(Game *game, float scale) {
 
 }
 
-/**
- * Card cards[] is interpreted as Card *card
- */
+void initStars(Animation *stars, Texture2D *starsTexture, Spritesheet starsSheet) {
+    for (int i = 0; i < NO_OF_STARS; ++i) {
+        stars[i] = (Animation) {
+            .texture = starsTexture,
+            .position = (Vector2) { 0 },
+            .sheet = starsSheet,
+            .isAnimating = false
+         };
+    }
+
+}
+void initTrays(Game *game) {
+    Tray *trays = game->trays;
+    Color *colors = game->colors;
+    Texture2D *texture = game->trayTexture;
+
+    int trayStartX = -(TRAY_WIDTH * NO_OF_TRAYS) / 2;
+    for (int i = 0; i < NO_OF_TRAYS; ++i) {
+        Rectangle dest = {
+            trayStartX + gameScreenWidth / 2 + (TRAY_WIDTH * i) + (i * GAP) - (GAP * (NO_OF_TRAYS - 1)) / 2,
+            gameScreenHeight - TRAY_HEIGHT - PADDING,
+            TRAY_WIDTH,
+            TRAY_HEIGHT
+        };
+
+        trays[i] = (Tray) {
+            .texture = texture,
+            .color = colors[i],
+            .dest = dest,
+            .isShaking = false,
+            .shakeDuration = 0.0f,
+            .shakeIntensity = 0.0f,
+            .originalPosition = { dest.x, dest.y }
+        };
+    }
+}
+void initCards(Game *game) {
+    Card *cards = game->cards;
+    Color *colors = game->colors;
+    Texture2D *textures = game->cardTextures;
+
+    int cardStartX = -(CARD_WIDTH * NO_OF_CARDS) / 2;
+    for (int i = 0; i < NO_OF_CARDS; ++i) {
+        Vector2 startPosition = {
+            cardStartX + gameScreenWidth / 2 + (CARD_WIDTH * i) + (i * GAP) - (GAP * (NO_OF_CARDS - 1)) / 2,
+            PADDING
+        };
+        int id = GetRandomValue(0, NO_OF_TRAYS - 1);
+
+        if (isDrawCard && id >= 3) id = GetRandomValue(0, 2);
+
+        cards[i].dest = (Rectangle) {
+            startPosition.x,
+            startPosition.y,
+            CARD_WIDTH,
+            CARD_HEIGHT
+        };
+        cards[i].color = colors[id];
+
+        // flags
+        cards[i].isDragging = false;
+        cards[i].reachedTarget = false;
+        cards[i].scoredPoints = false;
+
+        // tween
+        cards[i].currentPosition = startPosition;   // This is set to the mousePosition at runtime
+        cards[i].targetPosition = startPosition;
+        cards[i].state = IDLE;
+        cards[i].frameCounter = 0;
+        cards[i].duration = 30.0f;                  // Length in frame (30 frame = 500ms)
+
+        // img
+        cards[i].nPatchTexture = game->nPatchTexture;
+        cards[i].nPatchSrc = game->nPatchSrc;
+        cards[i].imgTexture = textures[id];
+        cards[i].imgSrc = getRandomSource();
+    }
+}
+
 void updateCards(Card cards[]) {
+    /**
+     * Card cards[] is interpreted as Card *card
+     */
     if (isTweenCard && !isOff) {
         for (int i = 0; i < NO_OF_CARDS; ++i) {
             Card *card = (cards + i);
@@ -327,7 +325,7 @@ void updateTrays(Tray *trays) {
         // Tray *tray = (game->trays + i);
         Tray *tray = &trays[i];
         if (tray->isShaking) {
-            ApplyShake(&trays[i], &tray->dest.x, &tray->dest.y);
+            applyShake(&trays[i], &tray->dest.x, &tray->dest.y);
         }
     }
 }
@@ -514,9 +512,9 @@ int main() {
         .layout = NPATCH_NINE_PATCH
     };
 
-    SetRandomSourceRec(&greenSrc);
-    SetRandomSourceRec(&redSrc);
-    SetRandomSourceRec(&blueSrc);
+    setRandomSourceRec(&greenSrc);
+    setRandomSourceRec(&redSrc);
+    setRandomSourceRec(&blueSrc);
 
     Spritesheet starsSheet = {
         .srcRec = (Rectangle) { 0, 0, starsTexture.width / NO_FRAMES_STARS, starsTexture.height },

@@ -52,6 +52,9 @@ int CompareTrays(const void* a, const void* b) {
     // return A.id - B.id;
     // return B.id - A.id;
     // return B->id - A->id;
+    (void) A;
+    (void) B;
+    return 0;
 }
 void initStars(Animation *stars, Texture2D *starsTexture, Spritesheet starsSheet) {
     for (int i = 0; i < NO_OF_STARS; ++i) {
@@ -572,12 +575,12 @@ int main() {
             if (HasValueChanged(scale, previousScale)) {
                 Vector2 dpi = GetWindowScaleDPI();
                 int monitor = GetCurrentMonitor();
-                printf("monitor: %s %d\n", GetMonitorName(monitor), monitor);
-                printf("scale: %.2f\n", scale);
-                printf("resolution: %d x %d\n", screenWidth, screenHeight);
-                printf("render: %d x %d\n", GetRenderWidth(), GetRenderHeight());
-                // printf("dpi: %.2f, %.2f\n", dpi.x, dpi.y);
-                printf("----------------\n");
+                printf("%-14s: %s %d\n", "monitor", GetMonitorName(monitor), monitor);
+                printf("%-14s: %.2f\n", "scale", scale);
+                printf("%-14s: %d x %d\n", "resolution", screenWidth, screenHeight);
+                printf("%-14s: %d x %d\n", "render", GetRenderWidth(), GetRenderHeight());
+                printf("%-14s: %.2f, %.2f\n", "dpi", dpi.x, dpi.y);
+                printf("-------------------\n");
                 previousScale = scale;
             }
         #endif

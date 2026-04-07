@@ -10,6 +10,10 @@
 #include <stdbool.h>
 #include <math.h>
 
+#if defined(PLATFORM_WEB)
+    #include <emscripten/emscripten.h>
+#endif
+
 #define NO_OF_TRAYS 3
 #define NO_OF_CARDS 4
 #define GAP 70              // Space between cards & trays
@@ -121,6 +125,17 @@ typedef struct Game {
     Vector2 virtualMouse;
 } Game;
 
+typedef struct Context {
+    Game *game;
+    RenderTexture2D target;
+    Texture2D *cloudsTexture;   // 4
+    double increment;
+    int *order; // 20
+    Texture2D checkTexture;
+    Texture2D cursorTexture;
+    Texture2D cursorPressedTexture;
+} Context;
+
 // Function declarations
 Rectangle getRandomSource(void);
 void setRandomSourceRec(Rectangle *rect);
@@ -140,5 +155,6 @@ void drawCursor(Vector2 virtualMouse, Texture2D cursor, Texture2D cursorPressed)
 void drawScore(int score);
 void drawStars(Animation *stars);
 void reset(int *score);
+void GameLoop();
 
 #endif // LEARN_COLORS_H

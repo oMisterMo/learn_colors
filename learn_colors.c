@@ -9,6 +9,8 @@ int screenHeight = INITIAL_SCREEN_HEIGHT;
 int gameScreenWidth = INITIAL_SCREEN_WIDTH;
 int gameScreenHeight = INITIAL_SCREEN_HEIGHT;
 
+static Context ctx = { 0 };
+
 
 // Function definition
 
@@ -459,6 +461,64 @@ void drawCards(Card cards[], Texture2D check) {
 }
 
 
+void GameLoop() {
+        // Compute required framebuffer scaling
+        float scale = MIN((float) screenWidth / gameScreenWidth, (float )screenHeight / gameScreenHeight);
+
+        #if defined(DEBUG)
+            if (HasValueChanged(scale, previousScale)) {
+                Vector2 dpi = GetWindowScaleDPI();
+                int monitor = GetCurrentMonitor();
+                printf("%-14s: %s %d\n", "monitor", GetMonitorName(monitor), monitor);
+                printf("%-14s: %.2f\n", "scale", scale);
+                printf("%-14s: %d x %d\n", "resolution", screenWidth, screenHeight);
+                printf("%-14s: %d x %d\n", "render", GetRenderWidth(), GetRenderHeight());
+                printf("%-14s: %.2f, %.2f\n", "dpi", dpi.x, dpi.y);
+                printf("-------------------\n");
+                previousScale = scale;
+            }
+        #endif
+
+        // Input
+        handleInput(ctx.game, scale);
+
+        // Update
+        updateCards(ctx.game->cards);
+        updateTrays(ctx.game->trays);
+        updateStars(ctx.game->stars);
+
+        // Draw to texture
+        BeginTextureMode(ctx.target);
+            ClearBackground(WHITE);
+            drawBackground(ctx.cloudsTexture, &ctx.increment, ctx.order);
+            drawTrays(ctx.game->trays);
+            drawCards(ctx.game->cards, ctx.checkTexture);
+            drawCursor(ctx.game->virtualMouse, ctx.cursorTexture, ctx.cursorPressedTexture);
+            drawScore(ctx.game->score);
+            drawStars(ctx.game->stars);
+            DrawRectangleLinesEx((Rectangle){0,0,screenWidth,screenHeight}, 1, Fade(BLACK, 0.2));
+            DrawFPS(gameScreenWidth - MeasureText("60 FPS", 20) - 20, 20);
+        EndTextureMode();
+
+
+        // Draw to screen
+        float x = (screenWidth - ((float) gameScreenWidth * scale)) * 0.5f;
+        float y = (screenHeight - ((float) gameScreenHeight * scale)) * 0.5f;
+        Rectangle renderSource = { 0.0f, 0.0f, (float) ctx.target.texture.width, (float) -ctx.target.texture.height };
+        Rectangle renderDest = { x, y, (float) gameScreenWidth * scale, (float) gameScreenHeight * scale };
+        Vector2 origin = { 0, 0 };
+        float rotation = 0.0f;
+
+        BeginDrawing();
+        // BeginScissorMode(0, 0, GetScreenWidth(), 200);
+            ClearBackground(BLACK);
+            // Draw render texture to screen, properly scaled
+            DrawTexturePro(ctx.target.texture, renderSource, renderDest, origin, rotation, WHITE);
+
+        // EndScissorMode();
+        EndDrawing();
+}
+
 int main() {
 
     // Setup config
@@ -566,67 +626,29 @@ int main() {
         LoadSFX();
     }
 
-    SetTargetFPS(60);
+
+    ctx.game = &game;
+    ctx.target = target;
+    ctx.cloudsTexture = cloudsTexture;
+    ctx.increment = increment;
+    ctx.order = order;
+    ctx.checkTexture = checkTexture;
+    ctx.cursorTexture = cursorTexture;
+    ctx.cursorPressedTexture = cursorPressedTexture;
+
 
     printf("-------------------\n");
     printf("GAME\n");
     printf("-------------------\n");
-    while(!WindowShouldClose()) {
-
-        // Compute required framebuffer scaling
-        float scale = MIN((float) screenWidth / gameScreenWidth, (float )screenHeight / gameScreenHeight);
-
-        #if defined(DEBUG)
-            if (HasValueChanged(scale, previousScale)) {
-                Vector2 dpi = GetWindowScaleDPI();
-                int monitor = GetCurrentMonitor();
-                printf("%-14s: %s %d\n", "monitor", GetMonitorName(monitor), monitor);
-                printf("%-14s: %.2f\n", "scale", scale);
-                printf("%-14s: %d x %d\n", "resolution", screenWidth, screenHeight);
-                printf("%-14s: %d x %d\n", "render", GetRenderWidth(), GetRenderHeight());
-                printf("%-14s: %.2f, %.2f\n", "dpi", dpi.x, dpi.y);
-                printf("-------------------\n");
-                previousScale = scale;
-            }
-        #endif
-
-        // Input
-        handleInput(&game, scale);
-
-        // Update
-        updateCards(game.cards);
-        updateTrays(game.trays);
-        updateStars(game.stars);
-
-        BeginTextureMode(target);
-            ClearBackground(WHITE);
-            drawBackground(cloudsTexture, &increment, order);
-            drawTrays(game.trays);
-            drawCards(game.cards, checkTexture);
-            drawCursor(game.virtualMouse, cursorTexture, cursorPressedTexture);
-            drawScore(game.score);
-            drawStars(stars);
-            DrawRectangleLinesEx((Rectangle){0,0,screenWidth,screenHeight}, 1, Fade(BLACK, 0.2));
-            DrawFPS(gameScreenWidth - MeasureText("60 FPS", 20) - 20, 20);
-        EndTextureMode();
-
-
-        // Draw
-        float x = (screenWidth - ((float) gameScreenWidth * scale)) * 0.5f;
-        float y = (screenHeight - ((float) gameScreenHeight * scale)) * 0.5f;
-        Rectangle renderSource = { 0.0f, 0.0f, (float) target.texture.width, (float) -target.texture.height };
-        Rectangle renderDest = { x, y, (float) gameScreenWidth * scale, (float) gameScreenHeight * scale };
-        Vector2 origin = { 0, 0 };
-        BeginDrawing();
-        // BeginScissorMode(0, 0, GetScreenWidth(), 200);
-            ClearBackground(BLACK);
-            // Draw render texture to screen, properly scaled
-            DrawTexturePro(target.texture, renderSource, renderDest, origin, 0.0f, WHITE);
-
-        // EndScissorMode();
-        EndDrawing();
-
-    }
+    // Main game loop
+    #if defined(PLATFORM_WEB)
+        emscripten_set_main_loop(GameLoop, 0, 1);
+    #else
+        SetTargetFPS(60);
+        while (!WindowShouldClose()) {
+            GameLoop();
+        }
+    #endif
 
     printf("-------------------\n");
     printf("DESTROY\n");

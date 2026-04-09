@@ -14,7 +14,10 @@ CC = emcc
 CFLAGS = -Os -Wall -Wno-missing-braces -Wunused-result -std=c99 -D_DEFAULT_SOURCE -DPLATFORM_WEB
 INCLUDES = -I. -I $(RAYLIB_SRC) -I $(RAYLIB_EXAMPLES)/others
 LIBS = -L. $(RAYLIB_SRC)/libraylib.web.a
-LDFLAGS = -s USE_GLFW=3 -s TOTAL_MEMORY=67108864 -s FORCE_FILESYSTEM=1 \
+LDFLAGS = \
+	-s USE_GLFW=3 \
+	-s TOTAL_MEMORY=67108864 \
+	-s FORCE_FILESYSTEM=1 \
 	-s 'EXPORTED_FUNCTIONS=["_free","_malloc","_main"]' \
 	-s EXPORTED_RUNTIME_METHODS=ccall \
 	--shell-file $(RAYLIB_SRC)/minshell.html \

@@ -128,9 +128,9 @@ typedef struct Game {
 typedef struct Context {
     Game *game;
     RenderTexture2D target;
-    Texture2D *cloudsTexture;   // 4
+    Texture2D *cloudsTexture;   // NO_OF_CLOUDS = 4
     double increment;
-    int *order; // 20
+    int *order; // NO_OF_ORDER = 20
     Texture2D checkTexture;
     Texture2D cursorTexture;
     Texture2D cursorPressedTexture;

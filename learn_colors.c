@@ -63,7 +63,8 @@ void handleInput(Game *game, float scale) {
     Card *cards = game->cards;
     Color *colors = game->colors;
     Animation *stars = game->stars;
-
+#ifdef PLATFORM_WEB
+#else
     if (IsKeyPressed(KEY_F)) {
         if (!IsWindowFullscreen()) {
             int monitor = GetCurrentMonitor();
@@ -78,6 +79,7 @@ void handleInput(Game *game, float scale) {
             SetWindowSize(screenWidth, screenHeight);
         }
     }
+#endif
     if (IsKeyPressed(KEY_R)) {
         reset(&game->score);
         initCards(game);

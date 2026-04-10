@@ -1,5 +1,14 @@
 # source ~/personal/utils/emsdk/emsdk_env.sh
 
+# Notes:
+# Do not need -I. or -L.
+
+# -L. Tells the linker: "Look for libraries in the current directory." It doesn't link a file; it just adds a search path.
+# The -L flag must be followed by a directory, not a filename.
+# LIBS = -L $(RAYLIB_SRC) -lraylib.web or
+# LIBS = -$(RAYLIB_SRC)/libraylib.web
+
+
 # Change this to your project name
 PROJECT_NAME = learn_colors
 

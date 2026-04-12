@@ -1,8 +1,12 @@
 # source ~/personal/utils/emsdk/emsdk_env.sh
 # cd /home/mo/personal/learn_colors
 # make clean && make web && mv out/* ~/personal/mohammed-ibrahim/public/raylib/learn_colors/
+# make desktop && out/learn_colors.out
+
 
 # Notes:
+# The default WASM stack size of 64KB. If you get an error about "out of memory", increase the TOTAL_MEMORY or allocate on the heap.
+
 # Do not need -I. or -L.
 
 # -L. Tells the linker: "Look for libraries in the current directory." It doesn't link a file; it just adds a search path.

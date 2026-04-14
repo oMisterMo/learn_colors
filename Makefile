@@ -1,7 +1,9 @@
-# source ~/personal/utils/emsdk/emsdk_env.sh
-# cd /home/mo/personal/learn_colors
-# make clean && make web && mv out/* ~/personal/mohammed-ibrahim/public/raylib/learn_colors/
-# make desktop && out/learn_colors.out
+
+# Run on desktop:
+# cd /home/mo/personal/learn_colors && make clean && make desktop && out/learn_colors.out
+
+# Deploy to web:
+# cd /home/mo/personal/learn_colors && make clean && make web && mv out/* ~/personal/mohammed-ibrahim/public/raylib/learn_colors/
 
 
 # Notes:

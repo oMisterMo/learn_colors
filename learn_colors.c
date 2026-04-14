@@ -643,14 +643,14 @@ int main() {
     printf("GAME\n");
     printf("-------------------\n");
     // Main game loop
-    #if defined(PLATFORM_WEB)
-        emscripten_set_main_loop(GameLoop, 0, 1);
-    #else
-        SetTargetFPS(60);
-        while (!WindowShouldClose()) {
-            GameLoop();
-        }
-    #endif
+#if defined(PLATFORM_WEB)
+    emscripten_set_main_loop(GameLoop, 0, 1);
+#else
+    SetTargetFPS(60);
+    while (!WindowShouldClose()) {
+        GameLoop();
+    }
+#endif
 
     printf("-------------------\n");
     printf("DESTROY\n");

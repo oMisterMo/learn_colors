@@ -1,9 +1,10 @@
 
 # Run on desktop:
-# cd /home/mo/personal/learn_colors && make clean && make desktop && out/learn_colors.out
+# cd ~/personal/learn_colors && make clean && make desktop && out/learn_colors.out
 
 # Deploy to web:
-# cd /home/mo/personal/learn_colors && make clean && make web && mv out/* ~/personal/mohammed-ibrahim/public/raylib/learn_colors/
+# cd ~/personal/learn_colors && make clean && make web && rm -f ~/personal/mohammed-ibrahim/public/raylib/learn_colors/* && mv out/* ~/personal/mohammed-ibrahim/public/raylib/learn_colors/
+
 
 
 # Notes:
@@ -43,9 +44,9 @@
 PROJECT_NAME = learn_colors
 
 # Doesn't change
-RAYLIB_SRC = /home/mo/personal/utils/raylib/src
-RAYLIB_EXAMPLES = /home/mo/personal/utils/raylib/examples
-# OUTDIR = /home/mo/personal/mohammed-ibrahim/public/raylib/$(PROJECT_NAME)
+RAYLIB_SRC = ~/personal/utils/raylib/src
+RAYLIB_EXAMPLES = ~/personal/utils/raylib/examples
+# OUTDIR = ~/personal/mohammed-ibrahim/public/raylib/$(PROJECT_NAME)
 OUTDIR = out
 
 
